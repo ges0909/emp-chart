@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Chart</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <script src="dist/ext/jquery.js"></script>
+  <script src="dist/ext/jquery.flot.js"></script>
+  <script src="dist/ext/jquery.flot.time.js"></script>
+  <script src="dist/ext/jquery.flot.resize.js"></script>
+  <script src="dist/ext/moment.js"></script>
+  <script src="dist/ext/lodash.js"></script>
+
+  <link rel="stylesheet" href="src/css/chart.css" />
+  <script src="src/js/chart.js"></script>
+
+  <script>
+    $(function () { // 'ready' shorthand
+      var diagramType = 'barChart';
+      var granularity = 'montly';
+      var startDate = '28/02/2018';
+      var endDate = '02/03/2018';
+      $.getJSON('src/data/place.json', function (json) {
+        Chart.preview($('#chart'), json, diagramType, granularity, startDate, endDate);
+      });
+    });
+  </script>
+</head>
+
+<body>
+  <div id="chart" style="width:inherit;height:90%;"></div>
+  <!-- <div id="footer">
+    Copyright &copy; 2018 infinIT Services GmbH
+  </div> -->
+</body>
+
+</html>

@@ -1,0 +1,47 @@
+{
+	"name": "emp-chart-2",
+	"version": "0.0.1",
+	"license": "UNLICENSED",
+	"private": true,
+	"description": "",
+	"keywords": [
+		"flot",
+		"chart"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/ges0909/emp-chart-2.git"
+	},
+	"author": "ges0909",
+	"contributors": [],
+	"dependencies": {
+		"jquery": "~3.2.1",
+		"jquery-csv": "~0.8.3",
+		"jquery.flot": "~0.8.3",
+		"lodash": "~4.17.5",
+		"moment": "~2.20.1",
+		"npm": "^5.6.0"
+	},
+	"devDependencies": {
+		"copy-webpack-plugin": "^4.3.1",
+		"del-cli": "~1.1.0",
+		"html-loader": "~0.5.5",
+		"eslint": "~4.16.0",
+		"qunit": "~2.5.0",
+		"webpack": "^3.10.0",
+		"webpack-dev-server": "~2.11.1",
+		"babel-loader": "~7.1.2",
+		"babel-core": "~6.26.0",
+		"babel-preset-env": "~1.6.1",
+		"css-loader": "0.28.9",
+		"style-loader": "0.19.1"
+	},
+	"scripts": {
+		"prebuild": "del-cli dist -f",
+		"build": "webpack",
+		"prod": "webpack -p",
+		"lint": "eslint public_html/js/**/*.js",
+		"start": "webpack-dev-server --inline",
+		"start2": "http-server -p 9999"
+	}
+}
