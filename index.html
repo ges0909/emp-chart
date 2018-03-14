@@ -19,11 +19,11 @@
   <script>
     $(function () { // 'ready' shorthand
       var diagramType = 'barChart';
-      var granularity = 'montly';
-      var startDate = '28/02/2018';
-      var endDate = '02/03/2018';
-      $.getJSON('src/data/place.json', function (json) {
-        Chart.preview($('#chart'), json, diagramType, granularity, startDate, endDate);
+      var granularity = 'daily';
+      var timeFrame = 'currentAndLast15Days';
+      var period = Chart.timePeriod(timeFrame);
+      $.getJSON('src/data/neu.json', function (json) {
+        Chart.preview($('#chart'), json, diagramType, granularity, period.startDate, period.endDate);
       });
     });
   </script>
