@@ -55,62 +55,63 @@ var Chart = {
   },
 
   timePeriod: function(timeFrame) {
-    if (timeFrame === 'currentYear') {
+    switch (timeFrame) {
+    case '1': // currentYear
       return {
         startDate: moment().date(1).month(0).format(this.DATE_FORMAT),
         endDate: moment().format(this.DATE_FORMAT)
       };
-    } else if (timeFrame === 'lastYear') {
+    case '2': // lastYear
       return {
         startDate: moment().subtract(1, 'year').startOf('year').format(this.DATE_FORMAT),
         endDate: moment().subtract(1, 'year').endOf('year').format(this.DATE_FORMAT)
       };
-    } else if (timeFrame === 'last12Month') {
+    case '3': // last12Month
       return {
         startDate: moment().subtract(1 + 12, 'month').startOf('month').format(this.DATE_FORMAT),
         endDate: moment().subtract(1, 'month').endOf('month').format(this.DATE_FORMAT)
       };
-    } else if (timeFrame === 'last3Years') {
+    case '4': // last3Years
       return {
         startDate: moment().subtract(3, 'year').startOf('year').format(this.DATE_FORMAT),
         endDate: moment().subtract(1, 'year').endOf('year').format(this.DATE_FORMAT)
       };
-    } else if (timeFrame === 'currentMonth') {
+    case '5': // currentMonth
       return {
         startDate: moment().startOf('month').format(this.DATE_FORMAT),
         endDate: moment().format(this.DATE_FORMAT)
       };
-    } else if (timeFrame === 'lastMonth') {
+    case '6': // lastMonth
       return {
         startDate: moment().subtract(1, 'month').startOf('month').format(this.DATE_FORMAT),
         endDate: moment().subtract(1, 'month').endOf('month').format(this.DATE_FORMAT)
       };
-    } else if (timeFrame === 'last15Days') {
+    case '7': // last15Days
       return {
         startDate: moment().subtract(15, 'days').format(this.DATE_FORMAT),
         endDate: moment().subtract(1, 'days').format(this.DATE_FORMAT)
       };
-    } else if (timeFrame === 'currentAndLastYear') {
+    case '8': // currentAndLastYear
       return {
         startDate: moment().subtract(1, 'year').startOf('year').format(this.DATE_FORMAT),
         endDate: moment().format(this.DATE_FORMAT)
       };
-    } else if (timeFrame === 'currentAndLast11Months') {
+    case '9': // currentAndLast11Months
       return {
         startDate: moment().subtract(11, 'month').startOf('month').format(this.DATE_FORMAT),
         endDate: moment().format(this.DATE_FORMAT)
       };
-    } else if (timeFrame === 'currentAndLast3Years') {
+    case '10': // currentAndLast3Years
       return {
         startDate: moment().subtract(3, 'year').startOf('year').format(this.DATE_FORMAT),
         endDate: moment().format(this.DATE_FORMAT)
       };
-    } else if (timeFrame === 'currentAndLastMonth') {
+    case '11': // currentAndLastMonth
       return {
         startDate: moment().subtract(1, 'month').startOf('month').format(this.DATE_FORMAT),
         endDate: moment().format(this.DATE_FORMAT)
       };
-    } else if (timeFrame === 'currentAndLast15Days') {
+    case '12': // currentAndLast15Days
       return {
         startDate: moment().subtract(1 + 15, 'days').format(this.DATE_FORMAT),
         endDate: moment().format(this.DATE_FORMAT)
