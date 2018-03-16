@@ -26,9 +26,9 @@ var Chart = {
     },
     xaxis: {
       mode: 'time',
-      minTickSize: [ 1, 'month' ],
+      minTickSize: [1, 'month'],
       timeformat: '%b',
-      monthNames: [ 'Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez' ],
+      monthNames: ['Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'],
       min: 0,
       max: 0
     },
@@ -45,73 +45,72 @@ var Chart = {
     }
   },
 
-  center: function(dataset, numberOfBarsToShow, barWidth) {
+  center: function (dataset, numberOfBarsToShow, barWidth) {
     var leftshift = barWidth * (numberOfBarsToShow / 2);
-    dataset.forEach(function(ds, index) {
-      ds.data.forEach(function(xy) {
+    dataset.forEach(function (ds, index) {
+      ds.data.forEach(function (xy) {
         xy[0] -= leftshift - index * barWidth;
       });
     });
   },
 
-  timePeriod: function(timeFrame) {
-    switch (timeFrame) {
-    case '1': // currentYear
+  timePeriod: function (timeFrame) {
+    if (timeFrame === 'currentYear') {
       return {
         startDate: moment().date(1).month(0).format(this.DATE_FORMAT),
         endDate: moment().format(this.DATE_FORMAT)
       };
-    case '2': // lastYear
+    } else if (timeFrame === 'lastYear') {
       return {
         startDate: moment().subtract(1, 'year').startOf('year').format(this.DATE_FORMAT),
         endDate: moment().subtract(1, 'year').endOf('year').format(this.DATE_FORMAT)
       };
-    case '3': // last12Month
+    } else if (timeFrame === 'last12Month') {
       return {
         startDate: moment().subtract(1 + 12, 'month').startOf('month').format(this.DATE_FORMAT),
         endDate: moment().subtract(1, 'month').endOf('month').format(this.DATE_FORMAT)
       };
-    case '4': // last3Years
+    } else if (timeFrame === 'last3Years') {
       return {
         startDate: moment().subtract(3, 'year').startOf('year').format(this.DATE_FORMAT),
         endDate: moment().subtract(1, 'year').endOf('year').format(this.DATE_FORMAT)
       };
-    case '5': // currentMonth
+    } else if (timeFrame === 'currentMonth') {
       return {
         startDate: moment().startOf('month').format(this.DATE_FORMAT),
         endDate: moment().format(this.DATE_FORMAT)
       };
-    case '6': // lastMonth
+    } else if (timeFrame === 'lastMonth') {
       return {
         startDate: moment().subtract(1, 'month').startOf('month').format(this.DATE_FORMAT),
         endDate: moment().subtract(1, 'month').endOf('month').format(this.DATE_FORMAT)
       };
-    case '7': // last15Days
+    } else if (timeFrame === 'last15Days') {
       return {
         startDate: moment().subtract(15, 'days').format(this.DATE_FORMAT),
         endDate: moment().subtract(1, 'days').format(this.DATE_FORMAT)
       };
-    case '8': // currentAndLastYear
+    } else if (timeFrame === 'currentAndLastYear') {
       return {
         startDate: moment().subtract(1, 'year').startOf('year').format(this.DATE_FORMAT),
         endDate: moment().format(this.DATE_FORMAT)
       };
-    case '9': // currentAndLast11Months
+    } else if (timeFrame === 'currentAndLast11Months') {
       return {
         startDate: moment().subtract(11, 'month').startOf('month').format(this.DATE_FORMAT),
         endDate: moment().format(this.DATE_FORMAT)
       };
-    case '10': // currentAndLast3Years
+    } else if (timeFrame === 'currentAndLast3Years') {
       return {
         startDate: moment().subtract(3, 'year').startOf('year').format(this.DATE_FORMAT),
         endDate: moment().format(this.DATE_FORMAT)
       };
-    case '11': // currentAndLastMonth
+    } else if (timeFrame === 'currentAndLastMonth') {
       return {
         startDate: moment().subtract(1, 'month').startOf('month').format(this.DATE_FORMAT),
         endDate: moment().format(this.DATE_FORMAT)
       };
-    case '12': // currentAndLast15Days
+    } else if (timeFrame === 'currentAndLast15Days') {
       return {
         startDate: moment().subtract(1 + 15, 'days').format(this.DATE_FORMAT),
         endDate: moment().format(this.DATE_FORMAT)
@@ -136,14 +135,14 @@ var Chart = {
    *     }
    * }
    */
-  preview: function(divId, json, diagramType, granularity, startDate, endDate) {
+  preview: function (divId, json, diagramType, granularity, startDate, endDate) {
     var ymax = 0;
     var dataset = [];
     var unit = json['unit'];
     var values = json['values'];
     for (var group in values) {
       var series = values[group];
-      var maxElem = series.reduce(function(accu, yx) {
+      var maxElem = series.reduce(function (accu, yx) {
         return yx[1] > accu[1] ? yx : accu;
       });
       ymax = maxElem[1] > ymax ? maxElem[1] : ymax;
@@ -160,7 +159,7 @@ var Chart = {
     this.options_.bars.show = diagramType === 'barChart';
 
     this.options_.yaxis.max = dataset.length === 0 ? 1 : ymax;
-    this.options_.yaxis.tickFormatter = function(value) {
+    this.options_.yaxis.tickFormatter = function (value) {
       return _.round(value, 2).toFixed(2) + ' ' + unit;
     };
 
@@ -175,16 +174,16 @@ var Chart = {
     }
 
     if (granularity === 'daily') {
-      this.options_.xaxis.minTickSize = [ 1, 'day' ];
+      this.options_.xaxis.minTickSize = [1, 'day'];
       this.options_.xaxis.timeformat = '%d.%m.';
     } else if (granularity === 'monthly') {
-      this.options_.xaxis.minTickSize = [ 1, 'month' ];
+      this.options_.xaxis.minTickSize = [1, 'month'];
       this.options_.xaxis.timeformat = '%b';
     } else if (granularity === 'yearly') {
-      this.options_.xaxis.minTickSize = [ 1, 'year' ];
+      this.options_.xaxis.minTickSize = [1, 'year'];
       this.options_.xaxis.timeformat = '%y';
     }
 
-    this.plot_ = $.plot(divId, dataset.length === 0 ? [ [] ] /*show grid without chart*/ : dataset, this.options_);
+    this.plot_ = $.plot(divId, dataset.length === 0 ? [[]] /*show grid without chart*/ : dataset, this.options_);
   }
 };

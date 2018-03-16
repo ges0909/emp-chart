@@ -20,7 +20,7 @@
     $(function () { // 'ready' shorthand
       var diagramType = 'barChart';
       var granularity = 'daily';
-      var timeFrame = '12' // currentAndLast15Days
+      var timeFrame = 'currentAndLast15Days';
       var period = Chart.timePeriod(timeFrame);
       $.getJSON('src/data/neu.json', function (json) {
         Chart.preview($('#chart'), json, diagramType, granularity, period.startDate, period.endDate);
