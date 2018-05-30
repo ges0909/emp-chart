@@ -1,0 +1,30 @@
+{
+  "unit": "kWh",
+  "granularity": "daily",
+  "diagramType": "barChart",
+  "dataDefinition": "none",
+  "startDate": "01/03/2018 00:00:00",
+  "endDate": "31/07/2018 23:59:59",
+  "values": {
+    "Adlershof": [
+      [
+        1527033599999,
+        679.86
+      ],
+      [
+        1526947199999,
+        1151.88
+      ]
+    ],
+    "Blankenfelde": [
+      [
+        1527033599999,
+        600.0
+      ],
+      [
+        1526947199999,
+        900.01
+      ]
+    ]
+  }
+}

@@ -18,8 +18,8 @@
 
   <script>
     $(function () { // 'ready' shorthand
-      $.getJSON('src/data/locations.json', function (json) {
-        Chart.show($('#chart'), json.values, json.unit, json.diagramType, json.granularity, json.startDate, json.endDate);
+      $.getJSON('src/data/tickbased.json', function (json) {
+        Chart.show($('#chart'), json.values, json.unit, json.diagramType, json.granularity, json.dataDefinition, json.startDate, json.endDate);
       });
     });
   </script>

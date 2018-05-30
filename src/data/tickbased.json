@@ -1,0 +1,10 @@
+{
+  "unit": "kWh",
+  "granularity": "monthly",
+  "diagramType": "barChart",
+  "dataDefinition": "average",
+  "values": {
+    "Adlershof": [ [ 0, 679.86 ], [ 1, 1151.88 ] ],
+    "Blankenfelde": [ [ 0, 600.0 ], [ 1, 900.01 ] ]
+  }
+}
