@@ -8,24 +8,32 @@ body {
   padding: 0;
 }
 
-fieldset {
-  border: 0;
-}
-
-label {
-  display: block;
-  margin: 30px 0 0 0;
-}
-
-.overflow {
-  height: 200px;
-}
-
 /*
  * axis labels
  */
 
-.axisLabel {
+div.flot-graph-placeholder {
+  margin-bottom: 2em;
+}
+
+.consumtion-flow-bars div.xAxis div.tickLabel {
+  font-family: Oswald-RegularItalic;
+  font-size: 120%;
+  color: #7c7c7c;
+  transform: rotate(-45deg);
+  margin-top: 0.3em;
+}
+
+.consumtion-flow-bars div.yAxis div.tickLabel {
+  font-family: Oswald-RegularItalic;
+  color: #7c7c7c;
+}
+
+.consumtion-flow-bars div.tickLabel {
+  font-size: 120%;
+}
+
+/* .axisLabel {
   position: absolute;
   text-align: center;
   font-size: 12px;
@@ -52,4 +60,4 @@ label {
   -ms-transform-origin: 0 0;
   -moz-transform-origin: 0 0;
   -webkit-transform-origin: 0 0;
-}
+} */
