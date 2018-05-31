@@ -50,7 +50,7 @@ var Chart = {
     return max[1];
   },
 
-  show: function(divId, values, unit, diagramType, granularity, dataDefinition, startDate, endDate) {
+  show: function(divId, values, unit, diagramType, granularity, dataDefinition, startDate, endDate, locale) {
     var xmax = 0;
     var ymax = 0;
     var dataset = [];
@@ -68,43 +68,20 @@ var Chart = {
     }
 
     // xaxis
+    var monthNames = moment.localeData(locale).monthsShort();
     if (dataDefinition === 'average') {
       this.options_.xaxis.min = 0;
       this.options_.xaxis.max = xmax + 1;
       this.options_.bars.barWidth = 1;
       if (granularity === 'monthly') {
-        this.options_.xaxis.ticks = [
-          [ 0, 'jan' ],
-          [ 1, 'feb' ],
-          [ 2, 'mar' ],
-          [ 3, 'apr' ],
-          [ 4, 'may' ],
-          [ 5, 'jun' ],
-          [ 6, 'jul' ],
-          [ 7, 'aug' ],
-          [ 8, 'sep' ],
-          [ 9, 'oct' ],
-          [ 10, 'nov' ],
-          [ 11, 'dec' ]
-        ];
+        this.options_.xaxis.ticks = monthNames.map(function(month, index) {
+          return [ index, month ];
+        });
       }
     } else {
       // mode: time
       this.options_.xaxis.mode = 'time';
-      this.options_.xaxis.monthNames = [
-        'Jan',
-        'Feb',
-        'Mar',
-        'Apr',
-        'Mai',
-        'Jun',
-        'Jul',
-        'Aug',
-        'Sep',
-        'Okt',
-        'Nov',
-        'Dez'
-      ];
+      this.options_.xaxis.monthNames = monthNames;
       var startTs = moment(startDate, 'DD/MM/YYYY HH:mm:ss').valueOf();
       var endTs = moment(endDate, 'DD/MM/YYYY HH:mm:ss').valueOf();
       var period = endTs - startTs;
@@ -129,6 +106,7 @@ var Chart = {
         return '';
       };
     } else {
+      ymax = ymax + ymax / 100 * 5; // add 5 percent as upper margin
       this.options_.yaxis.max = ymax;
       this.options_.yaxis.tickFormatter = function(value) {
         return _.round(value, 2).toFixed(2) + ' ' + unit;

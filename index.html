@@ -11,6 +11,7 @@
   <script src="dist/ext/jquery.flot.time.js"></script>
   <script src="dist/ext/jquery.flot.resize.js"></script>
   <script src="dist/ext/moment.js"></script>
+  <script src="dist/ext/de.js"></script>
   <script src="dist/ext/lodash.js"></script>
 
   <link rel="stylesheet" href="src/css/chart.css" />
@@ -19,7 +20,7 @@
   <script>
     $(function () { // 'ready' shorthand
       $.getJSON('src/data/tickbased.json', function (json) {
-        Chart.show($('#chart'), json.values, json.unit, json.diagramType, json.granularity, json.dataDefinition, json.startDate, json.endDate);
+        Chart.show($('#chart'), json.values, json.unit, json.diagramType, json.granularity, json.dataDefinition, json.startDate, json.endDate, 'de');
       });
     });
   </script>

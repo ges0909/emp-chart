@@ -30,20 +30,20 @@ module.exports = {
         use: {
           loader: 'babel-loader',
           options: {
-            presets: ['babel-preset-env']
+            presets: [ 'babel-preset-env' ]
           }
         }
       },
       {
         test: /\.css$/,
         exclude: /node_modules/,
-        use:  ['style-loader', 'css-loader']
+        use: [ 'style-loader', 'css-loader' ]
       }
     ]
   },
   plugins: [
     new CopyWebpackPlugin(
-      Assets.map(asset => {
+      Assets.map((asset) => {
         return {
           from: path.resolve(__dirname, `./node_modules/${asset}`),
           to: path.resolve(__dirname, 'dist/ext')

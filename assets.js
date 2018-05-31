@@ -1,6 +1,4 @@
-const CSS = [
-  'qunit/qunit/qunit.css'
-];
+const CSS = [ 'qunit/qunit/qunit.css' ];
 
 const JS = [
   'jquery/dist/jquery.js',
@@ -10,6 +8,7 @@ const JS = [
   'jquery.flot/jquery.flot.resize.js',
   'lodash/lodash.js',
   'moment/moment.js',
+  'moment/locale/de.js',
   'qunit/qunit/qunit.js'
 ];
 
