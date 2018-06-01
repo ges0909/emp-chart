@@ -4,7 +4,7 @@
   "diagramType": "barChart",
   "dataDefinition": "average",
   "values": {
-    "Adlershof": [ [ 0, 679.86 ], [ 1, 1151.88 ] ],
-    "Blankenfelde": [ [ 0, 600.0 ], [ 1, 900.01 ] ]
+    "Adlershof": [ [ 12, 679.86 ], [ 12, 1151.88 ] ],
+    "Blankenfelde": [ [ 12, 600.0 ], [ 12, 900.01 ] ]
   }
 }
