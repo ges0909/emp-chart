@@ -3,20 +3,6 @@
 var Chart = {
   plot_: null,
 
-  maxOfX: function(series) {
-    var max = series.reduce(function(accu, xy) {
-      return xy[0] > accu[0] ? xy : accu;
-    });
-    return max[0];
-  },
-
-  maxOfY: function(series) {
-    var max = series.reduce(function(accu, xy) {
-      return xy[1] > accu[1] ? xy : accu;
-    });
-    return max[1];
-  },
-
   flatMap: function(dataset) {
     return dataset
       .map(function(ds) {
@@ -28,6 +14,7 @@ var Chart = {
   },
 
   center: function(dataset, barWidth, minX, maxX) {
+    var maxY = 0;
     var groupedByX = _.groupBy(this.flatMap(dataset), function(point) {
       return point[0]; // x-coordinate
     });
@@ -38,11 +25,13 @@ var Chart = {
         point[0] -= leftshift - index * barWidth;
         minX = Math.min(minX, point[0]);
         maxX = Math.max(maxX, point[0] + barWidth);
+        maxY = Math.max(maxY, point[1]);
       });
     }
     return {
-      min: minX,
-      max: maxX
+      minX: minX,
+      maxX: maxX,
+      maxY: maxY
     };
   },
 
@@ -71,13 +60,9 @@ var Chart = {
       }
     };
 
-    var xmax = 0;
-    var ymax = 0;
     var dataset = [];
     for (var location in values) {
       var series = values[location];
-      xmax = Math.max(xmax, this.maxOfX(series));
-      ymax = Math.max(ymax, this.maxOfY(series));
       if (series.length > 0) {
         dataset.push({
           label: location, // label must be given to list series in legend
@@ -109,22 +94,19 @@ var Chart = {
       } else if (granularity === 'yearly') {
         options.xaxis.min = 2015;
         options.xaxis.max = 2020;
-        //        options.bars.barWidth = 2;
         options.xaxis.ticks = _.times(99, function(index) {
           return [ index + 1970, index + 1970 + '' ];
         });
       }
     } else {
-      // mode: time
       options.xaxis.mode = 'time';
-      var startTs = moment(startDate, 'DD/MM/YYYY HH:mm:ss').valueOf();
-      var endTs = moment(endDate, 'DD/MM/YYYY HH:mm:ss').valueOf();
+      var startTs = moment(startDate, 'DD/MM/YYYY HH:mm:ss.SSS').valueOf();
+      var endTs = moment(endDate, 'DD/MM/YYYY HH:mm:ss.SSS').valueOf();
       var period = endTs - startTs;
       options.xaxis.min = startTs - period / 100 * 2; // add 2 percent on left side as margin
       options.xaxis.max = endTs + period / 100 * 10; // add 10 percent on right side as margin
       options.bars.barWidth = period / 100 * 2;
       options.xaxis.monthNames = moment.localeData(locale).monthsShort();
-      options.xaxis.ticks = null;
       if (granularity === 'daily') {
         options.xaxis.minTickSize = [ 1, 'day' ];
         options.xaxis.timeformat = '%b %d';
@@ -133,7 +115,7 @@ var Chart = {
         options.xaxis.timeformat = '%b';
       } else if (granularity === 'yearly') {
         options.xaxis.minTickSize = [ 1, 'year' ];
-        options.xaxis.timeformat = '%y';
+        options.xaxis.timeformat = '%Y';
       }
     }
 
@@ -143,21 +125,20 @@ var Chart = {
         return '';
       };
     } else {
-      ymax = ymax + ymax / 100 * 5; // add 5 percent as upper margin
-      options.yaxis.max = ymax;
       options.yaxis.tickFormatter = function(value) {
         return _.round(value, 2).toFixed(2) + ' ' + unit;
       };
     }
 
-    options.lines.show = diagramType === 'lineChart';
-    options.bars.show = diagramType === 'barChart';
-
     if (diagramType === 'barChart') {
       var minmax = this.center(dataset, options.bars.barWidth, options.xaxis.min, options.xaxis.max);
-      options.xaxis.min = Math.min(options.xaxis.min, minmax.min);
-      options.xaxis.max = Math.max(options.xaxis.max, minmax.max);
+      options.xaxis.min = Math.min(options.xaxis.min, minmax.minX);
+      options.xaxis.max = Math.max(options.xaxis.max, minmax.maxX);
+      options.yaxis.max = minmax.maxY + minmax.maxY * 0.05; // add 5 percent as upper margin
     }
+
+    options.lines.show = diagramType === 'lineChart';
+    options.bars.show = diagramType === 'barChart';
 
     this.plot_ = $.plot(divId, dataset.length === 0 ? [ [] ] /*show grid without chart*/ : dataset, options);
   }
