@@ -3,52 +3,6 @@
 var Chart = {
   plot_: null,
 
-  options_: {
-    lines: {
-      show: false
-    },
-    bars: {
-      show: false,
-      lineWidth: 0
-    },
-    xaxis: {},
-    yaxis: {
-      min: 0,
-      tickFormatter: null
-    },
-    legend: {
-      show: true
-    },
-    grid: {
-      borderWidth: 0,
-      backgroundColor: '#fafafa',
-      hoverable: true,
-      clickable: true
-    }
-  },
-
-  center: function(dataset, barWidth, min, max) {
-    var flattenpointsAtX = _.flatMap(dataset, function(ds) {
-      return ds.data;
-    });
-    var groupedByX = _.groupBy(flattenpointsAtX, function(point) {
-      return point[0]; // x-coordinate
-    });
-    for (var x in groupedByX) {
-      var pointsOnX = groupedByX[x];
-      var leftshift = barWidth * (pointsOnX.length / 2);
-      pointsOnX.forEach(function(point, index) {
-        point[0] -= leftshift - index * barWidth;
-        min = Math.min(min, point[0]);
-        max = Math.max(max, point[0] + barWidth);
-      });
-    }
-    return {
-      min: min,
-      max: max
-    };
-  },
-
   maxOfX: function(series) {
     var max = series.reduce(function(accu, xy) {
       return xy[0] > accu[0] ? xy : accu;
@@ -63,7 +17,60 @@ var Chart = {
     return max[1];
   },
 
+  flatMap: function(dataset) {
+    return dataset
+      .map(function(ds) {
+        return ds.data;
+      })
+      .reduce(function(acc, point) {
+        return acc.concat(point, []);
+      });
+  },
+
+  center: function(dataset, barWidth, minX, maxX) {
+    var groupedByX = _.groupBy(this.flatMap(dataset), function(point) {
+      return point[0]; // x-coordinate
+    });
+    for (var x in groupedByX) {
+      var pointsOnX = groupedByX[x];
+      var leftshift = barWidth * (pointsOnX.length / 2);
+      pointsOnX.forEach(function(point, index) {
+        point[0] -= leftshift - index * barWidth;
+        minX = Math.min(minX, point[0]);
+        maxX = Math.max(maxX, point[0] + barWidth);
+      });
+    }
+    return {
+      min: minX,
+      max: maxX
+    };
+  },
+
   show: function(divId, values, unit, diagramType, granularity, dataDefinition, startDate, endDate, locale) {
+    var options = {
+      lines: {
+        show: false
+      },
+      bars: {
+        show: false,
+        lineWidth: 0
+      },
+      xaxis: {},
+      yaxis: {
+        min: 0,
+        tickFormatter: null
+      },
+      legend: {
+        show: true
+      },
+      grid: {
+        borderWidth: 0,
+        backgroundColor: '#fafafa',
+        hoverable: true,
+        clickable: true
+      }
+    };
+
     var xmax = 0;
     var ymax = 0;
     var dataset = [];
@@ -81,73 +88,77 @@ var Chart = {
 
     // xaxis
     if (dataDefinition === 'average' || dataDefinition === 'accumulateAndAverage' || dataDefinition === 'comparison') {
-      this.options_.bars.barWidth = 1;
+      options.bars.barWidth = 1;
       if (granularity === 'daily') {
-        this.options_.xaxis.min = 1;
-        this.options_.xaxis.max = 366;
-        this.options_.xaxis.ticks = _.times(365, function(index) {
+        options.xaxis.min = 1;
+        options.xaxis.max = 366;
+        options.xaxis.ticks = _.times(365, function(index) {
           var m = moment().dayOfYear(index + 1);
           return [ index + 1, m.format('D' + '.' + m.format('M') + '.') ];
         });
       } else if (granularity === 'monthly') {
-        this.options_.xaxis.min = 1;
-        this.options_.xaxis.max = 12;
+        options.xaxis.min = 1;
+        options.xaxis.max = 12;
         var monthNames = moment.localeData(locale).monthsShort();
-        this.options_.xaxis.ticks = monthNames.map(function(month, index) {
+        options.xaxis.ticks = monthNames.map(function(month, index) {
           return [ index + 1, month ];
         });
         if (diagramType === 'barChart') {
-          this.options_.bars.barWidth = 0.2;
+          options.bars.barWidth = 0.2;
         }
       } else if (granularity === 'yearly') {
-        this.options_.xaxis.ticks = _.times(99, function(index) {
+        options.xaxis.min = 2015;
+        options.xaxis.max = 2020;
+        //        options.bars.barWidth = 2;
+        options.xaxis.ticks = _.times(99, function(index) {
           return [ index + 1970, index + 1970 + '' ];
         });
       }
     } else {
       // mode: time
-      this.options_.xaxis.mode = 'time';
+      options.xaxis.mode = 'time';
       var startTs = moment(startDate, 'DD/MM/YYYY HH:mm:ss').valueOf();
       var endTs = moment(endDate, 'DD/MM/YYYY HH:mm:ss').valueOf();
       var period = endTs - startTs;
-      this.options_.xaxis.min = startTs - period / 100 * 2; // add 2 percent on left side as margin
-      this.options_.xaxis.max = endTs + period / 100 * 10; // add 10 percent on right side as margin
-      this.options_.bars.barWidth = period / 100 * 2;
-      this.options_.xaxis.monthNames = moment.localeData(locale).monthsShort();
+      options.xaxis.min = startTs - period / 100 * 2; // add 2 percent on left side as margin
+      options.xaxis.max = endTs + period / 100 * 10; // add 10 percent on right side as margin
+      options.bars.barWidth = period / 100 * 2;
+      options.xaxis.monthNames = moment.localeData(locale).monthsShort();
+      options.xaxis.ticks = null;
       if (granularity === 'daily') {
-        this.options_.xaxis.minTickSize = [ 1, 'day' ];
-        this.options_.xaxis.timeformat = '%b %d';
+        options.xaxis.minTickSize = [ 1, 'day' ];
+        options.xaxis.timeformat = '%b %d';
       } else if (granularity === 'monthly') {
-        this.options_.xaxis.minTickSize = [ 1, 'month' ];
-        this.options_.xaxis.timeformat = '%b';
+        options.xaxis.minTickSize = [ 1, 'month' ];
+        options.xaxis.timeformat = '%b';
       } else if (granularity === 'yearly') {
-        this.options_.xaxis.minTickSize = [ 1, 'year' ];
-        this.options_.xaxis.timeformat = '%y';
+        options.xaxis.minTickSize = [ 1, 'year' ];
+        options.xaxis.timeformat = '%y';
       }
     }
 
     // yaxis
     if (dataset.length === 0) {
-      this.options_.yaxis.tickFormatter = function() {
+      options.yaxis.tickFormatter = function() {
         return '';
       };
     } else {
       ymax = ymax + ymax / 100 * 5; // add 5 percent as upper margin
-      this.options_.yaxis.max = ymax;
-      this.options_.yaxis.tickFormatter = function(value) {
+      options.yaxis.max = ymax;
+      options.yaxis.tickFormatter = function(value) {
         return _.round(value, 2).toFixed(2) + ' ' + unit;
       };
     }
 
-    this.options_.lines.show = diagramType === 'lineChart';
-    this.options_.bars.show = diagramType === 'barChart';
+    options.lines.show = diagramType === 'lineChart';
+    options.bars.show = diagramType === 'barChart';
 
     if (diagramType === 'barChart') {
-      var minmax = this.center(dataset, this.options_.bars.barWidth, this.options_.xaxis.min, this.options_.xaxis.max);
-      this.options_.xaxis.min = Math.min(this.options_.xaxis.min, minmax.min);
-      this.options_.xaxis.max = Math.max(this.options_.xaxis.max, minmax.max);
+      var minmax = this.center(dataset, options.bars.barWidth, options.xaxis.min, options.xaxis.max);
+      options.xaxis.min = Math.min(options.xaxis.min, minmax.min);
+      options.xaxis.max = Math.max(options.xaxis.max, minmax.max);
     }
 
-    this.plot_ = $.plot(divId, dataset.length === 0 ? [ [] ] /*show grid without chart*/ : dataset, this.options_);
+    this.plot_ = $.plot(divId, dataset.length === 0 ? [ [] ] /*show grid without chart*/ : dataset, options);
   }
 };
