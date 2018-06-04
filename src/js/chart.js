@@ -13,25 +13,38 @@ var Chart = {
       });
   },
 
-  center: function(dataset, barWidth, minX, maxX) {
-    var maxY = 0;
+  prefly: function(groupedByX) {
+    var maxNbrOfBarsPerSlot;
+    for (var x in groupedByX) {
+      var pointsOnX = groupedByX[x];
+      pointsOnX.forEach(function(point, index) {
+        maxNbrOfBarsPerSlot = maxNbrOfBarsPerSlot ? Math.max(maxNbrOfBarsPerSlot, index + 1) : index + 1;
+      });
+    }
+    return 1 / maxNbrOfBarsPerSlot * 0.9;
+  },
+
+  center: function(dataset) {
+    var minX, maxX, maxY;
     var groupedByX = _.groupBy(this.flatMap(dataset), function(point) {
       return point[0]; // x-coordinate
     });
+    var barWidth = this.prefly(groupedByX);
     for (var x in groupedByX) {
       var pointsOnX = groupedByX[x];
       var leftshift = barWidth * (pointsOnX.length / 2);
       pointsOnX.forEach(function(point, index) {
         point[0] -= leftshift - index * barWidth;
-        minX = Math.min(minX, point[0]);
-        maxX = Math.max(maxX, point[0] + barWidth);
-        maxY = Math.max(maxY, point[1]);
+        minX = minX ? Math.min(minX, point[0]) : point[0];
+        maxX = maxX ? Math.max(maxX, point[0] + barWidth) : point[0] + barWidth;
+        maxY = maxY ? Math.max(maxY, point[1]) : point[1];
       });
     }
     return {
       minX: minX,
       maxX: maxX,
-      maxY: maxY
+      maxY: maxY,
+      barWidth: barWidth
     };
   },
 
@@ -73,17 +86,16 @@ var Chart = {
 
     // xaxis
     if (dataDefinition === 'average' || dataDefinition === 'accumulateAndAverage' || dataDefinition === 'comparison') {
-      options.bars.barWidth = 1;
       if (granularity === 'daily') {
-        options.xaxis.min = 1;
-        options.xaxis.max = 366;
+        // options.xaxis.min = 1;
+        // options.xaxis.max = 366;
         options.xaxis.ticks = _.times(365, function(index) {
           var m = moment().dayOfYear(index + 1);
           return [ index + 1, m.format('D' + '.' + m.format('M') + '.') ];
         });
       } else if (granularity === 'monthly') {
-        options.xaxis.min = 1;
-        options.xaxis.max = 12;
+        // options.xaxis.min = 1;
+        // options.xaxis.max = 12;
         var monthNames = moment.localeData(locale).monthsShort();
         options.xaxis.ticks = monthNames.map(function(month, index) {
           return [ index + 1, month ];
@@ -92,8 +104,8 @@ var Chart = {
           options.bars.barWidth = 0.2;
         }
       } else if (granularity === 'yearly') {
-        options.xaxis.min = 2015;
-        options.xaxis.max = 2020;
+        // options.xaxis.min = 2015;
+        // options.xaxis.max = 2020;
         options.xaxis.ticks = _.times(99, function(index) {
           return [ index + 1970, index + 1970 + '' ];
         });
@@ -105,7 +117,6 @@ var Chart = {
       var period = endTs - startTs;
       options.xaxis.min = startTs - period / 100 * 2; // add 2 percent on left side as margin
       options.xaxis.max = endTs + period / 100 * 10; // add 10 percent on right side as margin
-      options.bars.barWidth = period / 100 * 2;
       options.xaxis.monthNames = moment.localeData(locale).monthsShort();
       if (granularity === 'daily') {
         options.xaxis.minTickSize = [ 1, 'day' ];
@@ -131,10 +142,12 @@ var Chart = {
     }
 
     if (diagramType === 'barChart') {
-      var minmax = this.center(dataset, options.bars.barWidth, options.xaxis.min, options.xaxis.max);
-      options.xaxis.min = Math.min(options.xaxis.min, minmax.minX);
-      options.xaxis.max = Math.max(options.xaxis.max, minmax.maxX);
-      options.yaxis.max = minmax.maxY + minmax.maxY * 0.05; // add 5 percent as upper margin
+      var minmax = this.center(dataset);
+      // options.xaxis.min = Math.min(options.xaxis.min, minmax.minX);
+      // options.xaxis.max = Math.max(options.xaxis.max, minmax.maxX);
+      options.xaxis.min = minmax.minX;
+      options.xaxis.max = minmax.maxX;
+      options.bars.barWidth = minmax.barWidth;
     }
 
     options.lines.show = diagramType === 'lineChart';
