@@ -1,0 +1,12 @@
+{
+  "unit": "kWh",
+  "granularity": "monthly",
+  "diagramType": "barChart",
+  "dataDefinition": "average",
+  "values": {
+    "Adlershof": [ [ 2, 679.86 ], [ 3, 1151.88 ], [ 10, 1450.0 ] ],
+    "Blankenfelde": [ [ 2, 800.0 ], [ 3, 78.01 ], [ 10, 200.01 ] ],
+    "Mahlow": [ [ 2, 600.0 ], [ 3, 900.01 ], [ 10, 750.01 ] ],
+    "Waldblick": [ [ 2, 600.0 ], [ 3, 900.01 ], [ 5, 2000.01 ], [ 10, 750.01 ] ]
+  }
+}

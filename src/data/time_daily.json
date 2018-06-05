@@ -1,6 +1,6 @@
 {
   "unit": "kWh",
-  "granularity": "yearly",
+  "granularity": "daily",
   "diagramType": "barChart",
   "dataDefinition": "none",
   "values": {
