@@ -4,7 +4,10 @@
   "license": "UNLICENSED",
   "private": true,
   "description": "",
-  "keywords": [ "flot", "chart" ],
+  "keywords": [
+    "flot",
+    "chart"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/ges0909/emp-chart-2.git"

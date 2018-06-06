@@ -49,6 +49,9 @@ var Chart = {
 
   center: function(dataset, mode, granularity) {
     var minX, maxX, maxY;
+    // var datsetBarOnly = dataset.filter(function (ds) {
+    //   return ds.bars.show;
+    // });
     var groupedByX = _.groupBy(this.flatMap(dataset), function(point) {
       return point[0]; // x-coordinate
     });

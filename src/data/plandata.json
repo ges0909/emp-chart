@@ -1,6 +1,9 @@
 {
   "unit": "kWh",
+  "granularity": "monthly",
   "dataDefinition": "notAccumulate",
+  "startDate": 1483228800000,
+  "endDate": 1514764799000,
   "series": {
     "Plandata": {
       "data": [
@@ -23,6 +26,5 @@
       "data": [ [ 1493337599999, 1152.14 ] ],
       "type": "bar"
     }
-  },
-  "granularity": "daily"
+  }
 }
