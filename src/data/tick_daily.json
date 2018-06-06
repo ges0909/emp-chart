@@ -1,12 +1,23 @@
 {
   "unit": "kWh",
   "granularity": "daily",
-  "diagramType": "barChart",
   "dataDefinition": "average",
-  "values": {
-    "Adlershof": [ [ 2, 679.86 ], [ 3, 1151.88 ], [ 10, 1450.0 ] ],
-    "Blankenfelde": [ [ 2, 800.0 ], [ 3, 78.01 ], [ 10, 200.01 ] ],
-    "Mahlow": [ [ 2, 600.0 ], [ 3, 900.01 ], [ 10, 750.01 ] ],
-    "Waldblick": [ [ 2, 600.0 ], [ 3, 900.01 ], [ 5, 2000.01 ], [ 10, 750.01 ] ]
+  "series": {
+    "Adlershof": {
+      "data": [ [ 2, 679.86 ], [ 3, 1151.88 ], [ 10, 1450.0 ] ],
+      "type": "bar"
+    },
+    "Blankenfelde": {
+      "data": [ [ 2, 800.0 ], [ 3, 78.01 ], [ 10, 200.01 ] ],
+      "type": "bar"
+    },
+    "Mahlow": {
+      "data": [ [ 2, 600.0 ], [ 3, 900.01 ], [ 10, 750.01 ] ],
+      "type": "bar"
+    },
+    "Waldblick": {
+      "data": [ [ 2, 600.0 ], [ 3, 900.01 ], [ 5, 2000.01 ], [ 10, 750.01 ] ],
+      "type": "bar"
+    }
   }
 }

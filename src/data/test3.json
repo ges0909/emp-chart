@@ -1,0 +1,6 @@
+{
+  "unit": "kWh",
+  "dataDefinition": "comparison",
+  "series": { "Adlershof": { "data": [ [ 4, 1152.14 ] ], "type": "bar" } },
+  "granularity": "monthly"
+}

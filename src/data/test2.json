@@ -1,0 +1,11 @@
+{
+  "unit": "kWh",
+  "granularity": "daily",
+  "dataDefinition": "notAccumulate",
+  "series": {
+    "Adlershof": {
+      "data": [ [ 1493337599999, 1152.14 ] ],
+      "type": "bar"
+    }
+  }
+}
