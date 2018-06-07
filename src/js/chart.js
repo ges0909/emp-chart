@@ -4,72 +4,93 @@ var Chart = {
   plot_: null,
 
   flatMap: function(dataset) {
-    return dataset
-      .map(function(ds) {
-        return ds.data;
-      })
-      .reduce(function(acc, point) {
+    var points = dataset.map(function(ds) {
+      return ds.data;
+    });
+    if (points.length > 0) {
+      return points.reduce(function(acc, point) {
         return acc.concat(point, []);
       });
+    }
+    return [];
   },
 
-  prefly: function(groupedByX, mode, granularity, startDate, endDate) {
-    var minx, maxx, maxbars;
-    for (var x in groupedByX) {
-      var pointsOnX = groupedByX[x];
-      pointsOnX.forEach(function(point, index) {
+  minmax: function(dataset) {
+    var minx, maxx, maxy;
+    dataset.forEach(function(ds) {
+      var points = ds.data;
+      points.forEach(function(point) {
         minx = minx ? Math.min(minx, point[0]) : point[0];
         maxx = maxx ? Math.max(maxx, point[0]) : point[0];
-        maxbars = maxbars ? Math.max(maxbars, index + 1) : index + 1;
+        maxy = maxy ? Math.max(maxy, point[1]) : point[1];
       });
-    }
-    var slotwidth = 1;
-    if (mode && mode === 'time') {
-      var from = moment(startDate);
-      var to = moment(endDate);
-      var slots = to.diff(from, 'day') + 1; // number of time slots between first and last data point
-      if (granularity === 'monthly') {
-        slots = to.diff(from, 'month') + 1;
-      } else if (granularity === 'yearly') {
-        slots = to.diff(from, 'year') + 1;
-      }
-      if (slots === 1) {
-        slotwidth = moment.duration(1, 'days').asMilliseconds();
-        if (granularity === 'monthly') {
-          slotwidth = moment.duration(1, 'months').asMilliseconds();
-        } else if (granularity === 'yearly') {
-          slotwidth = moment.duration(1, 'years').asMilliseconds();
-        }
-      } else {
-        slotwidth = (endDate - startDate) / slots;
-      }
-    }
-    return slotwidth / maxbars * 0.9;
+    });
+    return [ minx, maxx, maxy ];
   },
 
-  center: function(dataset, mode, granularity, startDate, endDate) {
-    var minX, maxX, maxY;
-    // var datsetBarOnly = dataset.filter(function (ds) {
-    //   return ds.bars.show;
-    // });
-    var groupedByX = _.groupBy(this.flatMap(datsetBarOnly), function(point) {
-      return point[0]; // x-coordinate
+  maxBarNumber: function(dataset) {
+    var maxBarNumber = 0;
+    var filteredByBars = dataset.filter(function(ds) {
+      return ds.bars.show;
     });
-    var barWidth = this.prefly(groupedByX, mode, granularity, startDate, endDate);
+    var groupedByX = _.groupBy(this.flatMap(filteredByBars), function(point) {
+      return point[0];
+    });
     for (var x in groupedByX) {
       var pointsOnX = groupedByX[x];
-      var leftshift = barWidth * pointsOnX.length / 2;
       pointsOnX.forEach(function(point, index) {
-        point[0] -= leftshift - index * barWidth;
-        minX = minX ? Math.min(minX, point[0]) : point[0];
-        maxX = maxX ? Math.max(maxX, point[0] + barWidth) : point[0] + barWidth;
-        maxY = maxY ? Math.max(maxY, point[1]) : point[1];
+        maxBarNumber = Math.max(maxBarNumber, index + 1);
       });
     }
-    return [ minX, maxX, maxY, barWidth ];
+    return maxBarNumber;
+  },
+
+  slotWidth: function(dataset, granularity, start, end) {
+    var from = moment(start);
+    var to = moment(end);
+    var slots = to.diff(from, 'day') + 1; // number of time slots between first and last data point
+    if (granularity === 'monthly') {
+      slots = to.diff(from, 'month') + 1;
+    } else if (granularity === 'yearly') {
+      slots = to.diff(from, 'year') + 1;
+    }
+    var slotwidth = (end - start) / slots;
+    if (slots === 1) {
+      slotwidth = moment.duration(1, 'days').asMilliseconds();
+      if (granularity === 'monthly') {
+        slotwidth = moment.duration(1, 'months').asMilliseconds();
+      } else if (granularity === 'yearly') {
+        slotwidth = moment.duration(1, 'years').asMilliseconds();
+      }
+    }
+    return slotwidth;
+  },
+
+  shift: function(dataset, barwidth) {
+    var minx, maxx, maxy;
+    var filteredByBars = dataset.filter(function(ds) {
+      return ds.bars.show;
+    });
+    var groupedByX = _.groupBy(this.flatMap(filteredByBars), function(point) {
+      return point[0]; // x-coordinate
+    });
+    for (var x in groupedByX) {
+      for (var x in groupedByX) {
+        var pointsOnX = groupedByX[x];
+        var leftshift = barwidth * pointsOnX.length / 2;
+        pointsOnX.forEach(function(point, index) {
+          point[0] -= leftshift - index * barwidth;
+          minx = minx ? Math.min(minx, point[0]) : point[0];
+          maxx = maxx ? Math.max(maxx, point[0] + barwidth) : point[0] + barwidth;
+        });
+      }
+      return [ minx, maxx ];
+    }
   },
 
   show: function(divId, json, locale) {
+    var { dataDefinition, granularity, start, end } = json;
+
     var options = {
       xaxis: {},
       yaxis: {
@@ -78,9 +99,7 @@ var Chart = {
           return _.round(value, 2).toFixed(2) + ' ' + json.unit;
         }
       },
-      bars: {
-        // lineWidth: 0
-      },
+      bars: {},
       lines: {},
       legend: {
         show: true
@@ -106,26 +125,28 @@ var Chart = {
       }
     }
 
+    [ options.xaxis.min, options.xaxis.max, options.yaxis.max ] = this.minmax(dataset);
+
+    var useTicks =
+      dataDefinition === 'average' || dataDefinition === 'accumulateAndAverage' || dataDefinition === 'comparison';
+
     // xaxis
-    if (
-      json.dataDefinition === 'average' ||
-      json.dataDefinition === 'accumulateAndAverage' ||
-      json.dataDefinition === 'comparison'
-    ) {
-      if (json.granularity === 'daily') {
+    if (useTicks) {
+      if (granularity === 'daily') {
+        options.xaxis.min = 1;
+        options.xaxis.max = 366;
         options.xaxis.ticks = _.times(365, function(index) {
           var m = moment().dayOfYear(index + 1);
           return [ index + 1, m.format('D' + '.' + m.format('M') + '.') ];
         });
-      } else if (json.granularity === 'monthly') {
+      } else if (granularity === 'monthly') {
+        options.xaxis.min = 1;
+        options.xaxis.max = 12;
         var monthNames = moment.localeData(locale).monthsShort();
         options.xaxis.ticks = monthNames.map(function(month, index) {
           return [ index + 1, month ];
         });
-        if (json.diagramType === 'barChart') {
-          options.bars.barWidth = 0.2;
-        }
-      } else if (json.granularity === 'yearly') {
+      } else if (granularity === 'yearly') {
         options.xaxis.ticks = _.times(99, function(index) {
           return [ index + 1970, index + 1970 + '' ];
         });
@@ -133,27 +154,34 @@ var Chart = {
     } else {
       // 'time' mode
       options.xaxis.mode = 'time';
+      options.xaxis.min = start;
+      options.xaxis.max = end;
       options.xaxis.monthNames = moment.localeData(locale).monthsShort();
-      if (json.granularity === 'daily') {
+      if (granularity === 'daily') {
         options.xaxis.minTickSize = [ 1, 'day' ];
         options.xaxis.timeformat = '%b %d';
-      } else if (json.granularity === 'monthly') {
+      } else if (granularity === 'monthly') {
         options.xaxis.minTickSize = [ 1, 'month' ];
         options.xaxis.timeformat = '%b';
-      } else if (json.granularity === 'yearly') {
+      } else if (granularity === 'yearly') {
         options.xaxis.minTickSize = [ 1, 'year' ];
         options.xaxis.timeformat = '%Y';
       }
     }
 
-    var { startDate, endDate } = json;
-    [ options.xaxis.min, options.xaxis.max, options.yaxis.max, options.bars.barWidth ] = this.center(
-      dataset,
-      options.xaxis.mode,
-      json.granularity,
-      startDate,
-      endDate
-    );
+    var maxBarNumber = this.maxBarNumber(dataset);
+
+    if (maxBarNumber > 0) {
+      if (useTicks) {
+        options.bars.barWidth = 1 / maxBarNumber * 0.9;
+      } else {
+        var slotwidth = this.slotWidth(dataset, granularity, start, end);
+        options.bars.barWidth = slotwidth / maxBarNumber * 0.9;
+      }
+      var [ minX, maxX ] = this.shift(dataset, options.bars.barWidth);
+      options.xaxis.min = Math.min(options.xaxis.min, minX);
+      options.xaxis.max = Math.max(options.xaxis.max, maxX);
+    }
 
     this.plot_ = $.plot(divId, dataset, options);
   }

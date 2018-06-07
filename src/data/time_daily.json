@@ -2,6 +2,8 @@
   "unit": "kWh",
   "granularity": "daily",
   "dataDefinition": "none",
+  "start": 1526947199999,
+  "end": 1527033599999,
   "series": {
     "Adlershof": {
       "data": [ [ 1527033599999, 679.86 ], [ 1526947199999, 1151.88 ] ],

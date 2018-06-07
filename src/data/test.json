@@ -1,0 +1,13 @@
+{
+  "unit": "kWh",
+  "dataDefinition": "notAccumulate",
+  "series": {
+    "Deutschland": {
+      "data": [ [ 1514764799999, 1152.14 ], [ 1514764799999, 1152.14 ], [ 1514764799999, 1152.14 ] ],
+      "type": "bar"
+    }
+  },
+  "granularity": "yearly",
+  "start": 1483228800000,
+  "end": 1514764799999
+}
