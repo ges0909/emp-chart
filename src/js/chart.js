@@ -13,7 +13,7 @@ var Chart = {
       });
   },
 
-  prefly: function(groupedByX, mode, granularity) {
+  prefly: function(groupedByX, mode, granularity, startDate, endDate) {
     var minx, maxx, maxbars;
     for (var x in groupedByX) {
       var pointsOnX = groupedByX[x];
@@ -25,8 +25,8 @@ var Chart = {
     }
     var slotwidth = 1;
     if (mode && mode === 'time') {
-      var from = moment(minx);
-      var to = moment(maxx);
+      var from = moment(startDate);
+      var to = moment(endDate);
       var slots = to.diff(from, 'day') + 1; // number of time slots between first and last data point
       if (granularity === 'monthly') {
         slots = to.diff(from, 'month') + 1;
@@ -41,21 +41,21 @@ var Chart = {
           slotwidth = moment.duration(1, 'years').asMilliseconds();
         }
       } else {
-        slotwidth = (maxx - minx) / slots;
+        slotwidth = (endDate - startDate) / slots;
       }
     }
     return slotwidth / maxbars * 0.9;
   },
 
-  center: function(dataset, mode, granularity) {
+  center: function(dataset, mode, granularity, startDate, endDate) {
     var minX, maxX, maxY;
     // var datsetBarOnly = dataset.filter(function (ds) {
     //   return ds.bars.show;
     // });
-    var groupedByX = _.groupBy(this.flatMap(dataset), function(point) {
+    var groupedByX = _.groupBy(this.flatMap(datsetBarOnly), function(point) {
       return point[0]; // x-coordinate
     });
-    var barWidth = this.prefly(groupedByX, mode, granularity);
+    var barWidth = this.prefly(groupedByX, mode, granularity, startDate, endDate);
     for (var x in groupedByX) {
       var pointsOnX = groupedByX[x];
       var leftshift = barWidth * pointsOnX.length / 2;
@@ -146,10 +146,13 @@ var Chart = {
       }
     }
 
+    var { startDate, endDate } = json;
     [ options.xaxis.min, options.xaxis.max, options.yaxis.max, options.bars.barWidth ] = this.center(
       dataset,
       options.xaxis.mode,
-      json.granularity
+      json.granularity,
+      startDate,
+      endDate
     );
 
     this.plot_ = $.plot(divId, dataset, options);
