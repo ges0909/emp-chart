@@ -25,7 +25,7 @@ var Chart = {
         maxy = maxy ? Math.max(maxy, point[1]) : point[1];
       });
     });
-    return [ minx, maxx, maxy ];
+    return { minx: minx, maxx: maxx, maxy: maxy };
   },
 
   maxBarNumber: function(dataset) {
@@ -67,30 +67,27 @@ var Chart = {
   },
 
   shift: function(dataset, barwidth) {
-    var minx, maxx, maxy;
+    var minx, maxx;
     var filteredByBars = dataset.filter(function(ds) {
       return ds.bars.show;
     });
     var groupedByX = _.groupBy(this.flatMap(filteredByBars), function(point) {
       return point[0]; // x-coordinate
     });
+
     for (var x in groupedByX) {
-      for (var x in groupedByX) {
-        var pointsOnX = groupedByX[x];
-        var leftshift = barwidth * pointsOnX.length / 2;
-        pointsOnX.forEach(function(point, index) {
-          point[0] -= leftshift - index * barwidth;
-          minx = minx ? Math.min(minx, point[0]) : point[0];
-          maxx = maxx ? Math.max(maxx, point[0] + barwidth) : point[0] + barwidth;
-        });
-      }
-      return [ minx, maxx ];
+      var pointsOnX = groupedByX[x];
+      var leftshift = barwidth * pointsOnX.length / 2;
+      pointsOnX.forEach(function(point, index) {
+        point[0] -= leftshift - index * barwidth;
+        minx = minx ? Math.min(minx, point[0]) : point[0];
+        maxx = maxx ? Math.max(maxx, point[0] + barwidth) : point[0] + barwidth;
+      });
     }
+    return { minx: minx, maxx: maxx };
   },
 
   show: function(divId, json, locale) {
-    var { dataDefinition, granularity, start, end } = json;
-
     var options = {
       xaxis: {},
       yaxis: {
@@ -114,39 +111,43 @@ var Chart = {
 
     var dataset = [];
     for (var label in json.series) {
-      var { data, type } = json.series[label];
-      if (data.length > 0) {
+      if (json.series[label].data.length > 0) {
         dataset.push({
           label: label, // label must be given to list series in legend
-          data: data,
-          bars: { show: type === 'bar' },
-          lines: { show: type === 'line' }
+          data: json.series[label].data,
+          bars: { show: json.series[label].type === 'bar' },
+          lines: { show: json.series[label].type === 'line' }
         });
       }
     }
 
-    [ options.xaxis.min, options.xaxis.max, options.yaxis.max ] = this.minmax(dataset);
+    var minmax = this.minmax(dataset);
+    options.xaxis.min = minmax.minx;
+    options.xaxis.max = minmax.maxx;
+    options.yaxis.max = minmax.maxy;
 
     var useTicks =
-      dataDefinition === 'average' || dataDefinition === 'accumulateAndAverage' || dataDefinition === 'comparison';
+      json.dataDefinition === 'average' ||
+      json.dataDefinition === 'accumulateAndAverage' ||
+      json.dataDefinition === 'comparison';
 
     // xaxis
     if (useTicks) {
-      if (granularity === 'daily') {
+      if (json.granularity === 'daily') {
         options.xaxis.min = 1;
         options.xaxis.max = 366;
         options.xaxis.ticks = _.times(365, function(index) {
           var m = moment().dayOfYear(index + 1);
           return [ index + 1, m.format('D' + '.' + m.format('M') + '.') ];
         });
-      } else if (granularity === 'monthly') {
+      } else if (json.granularity === 'monthly') {
         options.xaxis.min = 1;
         options.xaxis.max = 12;
         var monthNames = moment.localeData(locale).monthsShort();
         options.xaxis.ticks = monthNames.map(function(month, index) {
           return [ index + 1, month ];
         });
-      } else if (granularity === 'yearly') {
+      } else if (json.granularity === 'yearly') {
         options.xaxis.ticks = _.times(99, function(index) {
           return [ index + 1970, index + 1970 + '' ];
         });
@@ -154,16 +155,16 @@ var Chart = {
     } else {
       // 'time' mode
       options.xaxis.mode = 'time';
-      options.xaxis.min = start;
-      options.xaxis.max = end;
+      options.xaxis.min = json.start;
+      options.xaxis.max = json.end;
       options.xaxis.monthNames = moment.localeData(locale).monthsShort();
-      if (granularity === 'daily') {
+      if (json.granularity === 'daily') {
         options.xaxis.minTickSize = [ 1, 'day' ];
         options.xaxis.timeformat = '%b %d';
-      } else if (granularity === 'monthly') {
+      } else if (json.granularity === 'monthly') {
         options.xaxis.minTickSize = [ 1, 'month' ];
         options.xaxis.timeformat = '%b';
-      } else if (granularity === 'yearly') {
+      } else if (json.granularity === 'yearly') {
         options.xaxis.minTickSize = [ 1, 'year' ];
         options.xaxis.timeformat = '%Y';
       }
@@ -175,12 +176,13 @@ var Chart = {
       if (useTicks) {
         options.bars.barWidth = 1 / maxBarNumber * 0.9;
       } else {
-        var slotwidth = this.slotWidth(dataset, granularity, start, end);
+        var slotwidth = this.slotWidth(dataset, json.granularity, json.start, json.end);
         options.bars.barWidth = slotwidth / maxBarNumber * 0.9;
       }
-      var [ minX, maxX ] = this.shift(dataset, options.bars.barWidth);
-      options.xaxis.min = Math.min(options.xaxis.min, minX);
-      options.xaxis.max = Math.max(options.xaxis.max, maxX);
+
+      var shift = this.shift(dataset, options.bars.barWidth);
+      options.xaxis.min = Math.min(options.xaxis.min, shift.minx);
+      options.xaxis.max = Math.max(options.xaxis.max, shift.maxx);
     }
 
     this.plot_ = $.plot(divId, dataset, options);
